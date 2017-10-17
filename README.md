@@ -43,7 +43,7 @@ Creates a new tween.
 * `begin` is the start value
 * `end` is the ending value
 * `duration` means how much the change will take until it's finished. It must be a positive number.
-* `easingFunction` can be either a function or a function name (see the easing section below). It's default value is `'linear'`
+* `easingFunction` can be either a function or a function name (see the easing section below).
 
 This function only creates and returns the tween. It must be captured in a variable
 and updated via `t.Update(dt)` in order for the changes to take place.
@@ -95,7 +95,7 @@ The easing functions can be found in the `ease` package.
 
 They can be divided into several families:
 
-* `linear` is the default interpolation. It's the simplest easing function.
+* `linear` is the simplest easing function, straight from one value to the other.
 * `quad`, `cubic`, `quart`, `quint`, `expo`, `sine` and `circle` are all "smooth" curves that will make transitions look natural.
 * The `back` family starts by moving the interpolation slightly "backwards" before moving it forward.
 * The `bounce` family simulates the motion of an object bouncing.
