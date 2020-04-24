@@ -16,9 +16,7 @@ func NewSequence(tweens ...*Tween) *Sequence {
 
 // Add adds one or more tweens in order to the Sequence.
 func (seq *Sequence) Add(tweens ...*Tween) {
-	for _, tween := range tweens {
-		seq.Tweens = append(seq.Tweens, tween)
-	}
+	seq.Tweens = append(seq.Tweens, tweens...)
 }
 
 // Remove removes one or more specified tweens from the Sequence.
