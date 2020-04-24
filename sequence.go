@@ -7,9 +7,9 @@ type Sequence struct {
 }
 
 // NewSequence returns a new Sequence object.
-func NewSequence() *Sequence {
+func NewSequence(tweens ...*Tween) *Sequence {
 	seq := &Sequence{
-		Tweens: []*Tween{},
+		Tweens: tweens,
 	}
 	return seq
 }
