@@ -49,18 +49,41 @@ func TestTween_Update(t *testing.T) {
 }
 
 func TestSequence(t *testing.T) {
-	seq := NewSequence()
-	seq.Add(
+
+	seq := NewSequence(
+		New(0, 5, 1, ease.Linear),
+		New(5, 0, 1, ease.Linear),
 		New(0, 2, 2, ease.Linear),
 		New(2, 0, 2, ease.Linear),
+		New(0, 1, 100, ease.Linear),
 	)
-	current, isFinished := seq.Update(1)
+
+	assert.True(t, len(seq.Tweens) == 5)
+	seq.Remove(0)
+	seq.Remove(0)
+	assert.True(t, len(seq.Tweens) == 3)
+
+	current, finishedTween, sequenceFinished := seq.Update(1)
+	// Half-way through first tween
 	assert.Equal(t, float32(1), current)
-	assert.False(t, isFinished)
-	current, isFinished = seq.Update(1)
+	assert.False(t, finishedTween)
+	assert.False(t, sequenceFinished)
+
+	current, finishedTween, sequenceFinished = seq.Update(1)
+	// Now at the start of the second tween
 	assert.Equal(t, float32(2), current)
-	assert.False(t, isFinished)
 	assert.Equal(t, seq.Index(), 1)
-	current, isFinished = seq.Update(2)
-	assert.True(t, isFinished)
+	assert.True(t, finishedTween)
+	assert.False(t, sequenceFinished)
+
+	current, finishedTween, sequenceFinished = seq.Update(2)
+	// Now at the start of the third Tween
+	assert.Equal(t, seq.Index(), 2)
+	assert.False(t, sequenceFinished)
+
+	seq.Remove(2)
+	current, finishedTween, sequenceFinished = seq.Update(1)
+	// Now finished because we removed the third tween and then called Sequence.Update()
+	assert.False(t, finishedTween)
+	assert.True(t, sequenceFinished)
 }

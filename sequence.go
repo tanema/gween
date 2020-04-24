@@ -2,8 +2,8 @@ package gween
 
 // Sequence represents a sequence of Tweens, executed one after the other.
 type Sequence struct {
-    Tweens []*Tween
-    index  int
+	Tweens []*Tween
+	index  int
 }
 
 // NewSequence returns a new Sequence object.
@@ -14,48 +14,45 @@ func NewSequence(tweens ...*Tween) *Sequence {
 	return seq
 }
 
-// Add adds one or more tweens in order to the Sequence.
+// Add adds one or more Tweens in order to the Sequence.
 func (seq *Sequence) Add(tweens ...*Tween) {
 	seq.Tweens = append(seq.Tweens, tweens...)
 }
 
-// Remove removes one or more specified tweens from the Sequence.
-func (seq *Sequence) Remove(tweens ...*Tween) {
-	for _, tween := range tweens {
-		for i, t := range seq.Tweens {
-			if t == tween {
-				seq.Tweens = append(seq.Tweens[:i], seq.Tweens[i+1:]...)
-				break
-			}
-		}
-	}
+// Remove removes a Tween of the specified index from the Sequence.
+func (seq *Sequence) Remove(index int) {
+	seq.Tweens = append(seq.Tweens[:index], seq.Tweens[index+1:]...)
 }
 
-// Update updates the currently active Tween in the Sequence; once it's done, the Sequence moves onto the next one.
-func (seq *Sequence) Update(dt float32) (float32, bool) {
+// Update updates the currently active Tween in the Sequence; once that Tween is done, the Sequence moves onto the next one.
+// Update() returns the current Tween's output, whether that Tween is complete, and whether the entire Sequence is complete.
+func (seq *Sequence) Update(dt float32) (float32, bool, bool) {
 
-	value, done := float32(0.0), false
-	allComplete := false
+	value := float32(0.0)
+	tweenComplete := false
+	sequenceComplete := false
 
 	if seq.index < len(seq.Tweens) {
 
-		value, done = seq.Tweens[seq.index].Update(dt)
+		value, tweenComplete = seq.Tweens[seq.index].Update(dt)
 
-		if done {
+		if tweenComplete {
 			seq.Tweens[seq.index].Reset()
 			seq.index++
 			if seq.index >= len(seq.Tweens) {
-				allComplete = true
+				sequenceComplete = true
 			}
 		}
 
+	} else {
+		sequenceComplete = true
 	}
 
-	return value, allComplete
+	return value, tweenComplete, sequenceComplete
 
 }
 
-// Index returns the current index of the Sequence.
+// Index returns the current index of the Sequence. Note that this can exceed the number of Tweens in the Sequence.
 func (seq *Sequence) Index() int {
 	return seq.index
 }
