@@ -47,3 +47,20 @@ func TestTween_Update(t *testing.T) {
 	assert.True(t, isFinished)
 
 }
+
+func TestSequence(t *testing.T) {
+	seq := NewSequence()
+	seq.Add(
+		New(0, 2, 2, ease.Linear),
+		New(2, 0, 2, ease.Linear),
+	)
+	current, isFinished := seq.Update(1)
+	assert.Equal(t, float32(1), current)
+	assert.False(t, isFinished)
+	current, isFinished = seq.Update(1)
+	assert.Equal(t, float32(2), current)
+	assert.False(t, isFinished)
+	assert.Equal(t, seq.Index(), 1)
+	current, isFinished = seq.Update(2)
+	assert.True(t, isFinished)
+}
