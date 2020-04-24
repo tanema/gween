@@ -1,12 +1,10 @@
 package gween
 
-type (
-	// Sequence represents a sequence of Tweens, executed one after the other.
-	Sequence struct {
-		Tweens []*Tween
-		index  int
-	}
-)
+// Sequence represents a sequence of Tweens, executed one after the other.
+type Sequence struct {
+    Tweens []*Tween
+    index  int
+}
 
 // NewSequence returns a new Sequence object.
 func NewSequence() *Sequence {
