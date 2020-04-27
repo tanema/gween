@@ -144,6 +144,25 @@ labelTween := tween.new(0, 300, 4, func(t, b, c, d) float32 {
 })
 ```
 
+## Sequences
+
+Sequences can be used to execute tweens in sequence easily.
+
+```go
+var numberSequence := gween.NewSequence(
+  gween.New(0, 4, 10, ease.Linear),
+  gween.New(4, 0, 10, ease.Linear),
+)
+current, tweenFinished, sequenceFinished := numberSequence.Update(dt) 
+
+// current will rise from 0 to 4, and then back to 0 over a period of 
+// 20 seconds
+
+// tweenFinished will be true when any tween finishes
+
+// sequenceFinished will be true when the entire sequence of Tweens finishes
+```
+
 # Credits
 
 The easing functions have been translated from Enrique García Cota's project in
