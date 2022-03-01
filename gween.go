@@ -14,12 +14,13 @@ type (
 		begin    float32
 		end      float32
 		change   float32
+		Overflow float32
 		easing   ease.TweenFunc
 	}
 )
 
-// New will return a new Tween when passed a begining and end value, the duration
-// of the tween and the easing function to anumate between the two values. The
+// New will return a new Tween when passed a beginning and end value, the duration
+// of the tween and the easing function to animate between the two values. The
 // easing function can be one of the provided easing functions from the ease package
 // or you can provide one of your own.
 func New(begin, end, duration float32, easing ease.TweenFunc) *Tween {
@@ -29,16 +30,19 @@ func New(begin, end, duration float32, easing ease.TweenFunc) *Tween {
 		change:   end - begin,
 		duration: duration,
 		easing:   easing,
+		Overflow: 0,
 	}
 }
 
 // Set will set the current time along the duration of the tween. It will then return
 // the current value as well as a boolean to determine if the tween is finished.
 func (tween *Tween) Set(time float32) (current float32, isFinished bool) {
+	tween.Overflow = 0
 	if time <= 0 {
 		tween.time = 0
 		current = tween.begin
 	} else if time >= tween.duration {
+		tween.Overflow = time - tween.duration
 		tween.time = tween.duration
 		current = tween.end
 	} else {
