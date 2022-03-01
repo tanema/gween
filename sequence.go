@@ -21,7 +21,7 @@ func (seq *Sequence) Add(tweens ...*Tween) {
 
 // Remove removes a Tween of the specified index from the Sequence.
 func (seq *Sequence) Remove(index int) {
-	if !(index >= len(seq.Tweens) || index < 0) {
+	if index >= 0 && index < len(seq.Tweens) {
 		seq.Tweens = append(seq.Tweens[:index], seq.Tweens[index+1:]...)
 	}
 }
