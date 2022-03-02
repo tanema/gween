@@ -21,35 +21,32 @@ func (seq *Sequence) Add(tweens ...*Tween) {
 
 // Remove removes a Tween of the specified index from the Sequence.
 func (seq *Sequence) Remove(index int) {
-	seq.Tweens = append(seq.Tweens[:index], seq.Tweens[index+1:]...)
+	if index >= 0 && index < len(seq.Tweens) {
+		seq.Tweens = append(seq.Tweens[:index], seq.Tweens[index+1:]...)
+	}
 }
 
 // Update updates the currently active Tween in the Sequence; once that Tween is done, the Sequence moves onto the next one.
 // Update() returns the current Tween's output, whether that Tween is complete, and whether the entire Sequence is complete.
 func (seq *Sequence) Update(dt float32) (float32, bool, bool) {
 
-	value := float32(0.0)
-	tweenComplete := false
-	sequenceComplete := false
+	var completed []int
+	remaining := dt
 
-	if seq.index < len(seq.Tweens) {
-
-		value, tweenComplete = seq.Tweens[seq.index].Update(dt)
-
-		if tweenComplete {
+	for {
+		if seq.index >= len(seq.Tweens) {
+			return seq.Tweens[len(seq.Tweens)-1].end, len(completed) > 0, true
+		}
+		v, tc := seq.Tweens[seq.index].Update(remaining)
+		if tc {
+			remaining = seq.Tweens[seq.index].Overflow
+			completed = append(completed, seq.index)
 			seq.Tweens[seq.index].Reset()
 			seq.index++
-			if seq.index >= len(seq.Tweens) {
-				sequenceComplete = true
-			}
+		} else {
+			return v, len(completed) > 0, false
 		}
-
-	} else {
-		sequenceComplete = true
 	}
-
-	return value, tweenComplete, sequenceComplete
-
 }
 
 // Index returns the current index of the Sequence. Note that this can exceed the number of Tweens in the Sequence.
