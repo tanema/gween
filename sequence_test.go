@@ -96,9 +96,16 @@ func TestSequence_Loops(t *testing.T) {
 	current, finishedTween, seqFinished := seq.Update(5.25)
 	assert.Equal(t, float32(2.25), current)
 	assert.True(t, finishedTween)
-	assert.True(t, seqFinished)
+	assert.False(t, seqFinished)
 	assert.Equal(t, 1, seq.loopRemaining)
 	assert.Equal(t, 2, seq.index)
+
+	current, finishedTween, seqFinished = seq.Update(0.75)
+	assert.Equal(t, float32(3), current)
+	assert.True(t, finishedTween)
+	assert.True(t, seqFinished)
+	assert.Equal(t, 0, seq.loopRemaining)
+	assert.Equal(t, 3, seq.index)
 }
 
 func TestSequence_LoopsForever(t *testing.T) {
@@ -111,7 +118,7 @@ func TestSequence_LoopsForever(t *testing.T) {
 	current, finishedTween, seqFinished := seq.Update(3*1_000_000 + 2.25)
 	assert.Equal(t, float32(2.25), current)
 	assert.True(t, finishedTween)
-	assert.True(t, seqFinished)
+	assert.False(t, seqFinished)
 	assert.Equal(t, -1, seq.loopRemaining)
 	assert.Equal(t, 2, seq.index)
 }
@@ -149,7 +156,7 @@ func TestSequence_BouncesAndLoops(t *testing.T) {
 	current, finishedTween, seqFinished := seq.Update(7.25)
 	assert.Equal(t, float32(1.25), current)
 	assert.True(t, finishedTween)
-	assert.True(t, seqFinished)
+	assert.False(t, seqFinished)
 	assert.Equal(t, 1, seq.loopRemaining)
 	assert.Equal(t, 1, seq.index)
 
@@ -200,7 +207,7 @@ func TestSequence_Has(t *testing.T) {
 	current, finishedTween, seqFinished := seq.Update(1)
 	assert.Equal(t, float32(0), current)
 	assert.False(t, finishedTween)
-	assert.False(t, seqFinished)
+	assert.True(t, seqFinished)
 }
 
 func TestSequence_SetIndex(t *testing.T) {

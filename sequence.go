@@ -43,11 +43,10 @@ func (seq *Sequence) Remove(index int) {
 // during this Update.
 func (seq *Sequence) Update(dt float32) (float32, bool, bool) {
 	if !seq.HasTweens() {
-		return 0, false, false
+		return 0, false, true
 	}
 	var completed []int
 	remaining := dt
-	looped := false
 	bounced := false
 
 	for {
@@ -66,12 +65,11 @@ func (seq *Sequence) Update(dt float32) (float32, bool, bool) {
 				}
 				return seq.Tweens[index].end, len(completed) > 0, true
 			}
-			looped = true
 			seq.index = 0
 		}
 		v, tc := seq.Tweens[seq.index].Update(remaining)
 		if !tc {
-			return v, len(completed) > 0, looped
+			return v, len(completed) > 0, false
 		}
 		remaining = seq.Tweens[seq.index].Overflow
 		completed = append(completed, seq.index)

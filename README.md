@@ -29,11 +29,23 @@ var tweenRed = gween.new(255, 0, 2, ease.Linear)
 currentBG, _ := tweenBackground.Update(dt)
 currentBGColor = [4]float32{currentBG, currentBG, currentBG, currentBG}
 currentColor[0], _ = tweenRed.Update(dt)
+
+// sequence increasing linearly from 0 to 4 over 10 seconds, 
+// then decreasing outElastic 4 to 0 over 2 seconds
+var sequence = gween.NewSequence(
+  gween.New(0, 4, 10, ease.Linear),
+  gween.New(4, 0, 2, ease.OutElastic),
+)
+// set to infinitely loop
+sequence.SetLoop(-1)
+val, tweenCompleted, seqenceCompleted = sequence.Update(dt)
 ```
 
 # Interface
 
-## Tween creation
+## Tween
+
+### Creation
 
 ```golang
 t := gween.New(begin, end, duration, easingFunction)
@@ -49,7 +61,7 @@ Creates a new tween.
 This function only creates and returns the tween. It must be captured in a variable
 and updated via `t.Update(dt)` in order for the changes to take place.
 
-## Tween methods
+### Methods
 
 ```golang
 currentValue, isFinished := t.Update(dt)
@@ -83,6 +95,94 @@ Moves a tween's internal clock to a particular moment.
 * `currentValue` is the value of the tween at the time set.
 * `isFinished` works like in `t.Update`; it's `true` if the tween has reached its
   end, and `false` otherwise.
+
+
+## Sequence
+
+### Creation
+
+```golang
+s := gween.NewSeqence(tweens ...*Tween)
+```
+
+Sequences can be used to execute tweens in sequence. They also provide looping
+and "bounce" functionality.
+
+* `tweens` the tweens to be executed in sequential order
+
+This function only creates and returns the sequence. It must be captured in a variable
+and updated via `s.Update(dt)` in order for the changes to take place.
+
+### Methods
+
+```golang
+currentValue, tweenCompleted, seqeuenceCompleted := s.Update(dt)
+```
+
+Gradually changes the `currentValue` from the `begin` value to the `end` value 
+of each tween in the sequence as time passes. If a `dt` is too large for the current
+tween, the "overflow" amount will automatically be carried into the next tween until the
+entire `dt` is exhausted by the tweens in the sequence, or the sequence completes.
+
+* `s` is a sequence returned by `gween.NewSequence`
+* `dt` is the difference in time. It will be added to the internal time counter of
+  the current tween and "overflow" to the next until completed exhausted.
+* `currentValue` is the current eased value for the current time.
+* `tweenCompleted` is `true` if any tween within the sequence has completed during this update.
+* `sequenceCompleted` is `true` if the entire sequence and all loops have completed. 
+  * When configured to loop indefinitely, this will always be `false`
+
+```golang
+s.SetLoop(l)
+```
+Defaults to `1`
+
+Configures the sequence to "loop" `l` times. When `l` is `-1`, sequence will
+loop infinitely.
+
+When used with `s.SetBounce(true)`, a single "loop" starts and ends at the
+`begin`ning of the first tween; making its way out to the `end` of the final
+tween and back again.
+
+```golang
+s.SetBounce(bool)
+```
+Defaults to `false`
+
+Configures the sequence on whether to "bounce" between the `begin`ning of the 
+first tween and the `end` of the last tween.
+
+* When `bounce` is `false`:
+  * A single loop of the sequence is when all tweens are completed in forward order.
+  * When the final loop of the sequence is complete, the `currentValue` will be 
+  equal to the `end` value of the final tween.
+* When `bounce` is `true`:
+  * A single loop is when all tweens have completed in forward order, and then completed again in reverse order.
+  * When the final loop of the sequence is complete, the `currentValue` will be 
+  equal to the `begin` value of the first tween.
+
+```golang
+s.Reset()
+```
+
+Resets all tweens in the sequence and sets the "current" tween back to the first. Also, 
+sets the remaining loop count back to the initial value last set using the 
+`.SetLoop()` function (or `1` if using the default).
+
+
+```golang
+s.Add(tweens ...*Tween)
+```
+
+Adds the `tweens` provided, in order, at the end of the existing tween list
+
+```golang
+s.Remove(index)
+```
+
+Removes the tween at the desired `index`. If you call `.Remove()` on an index 
+out of bounds, nothing happens.
+
 
 # Easing functions
 
@@ -142,25 +242,6 @@ Here's an example using a custom easing.
 labelTween := tween.new(0, 300, 4, func(t, b, c, d) float32 {
   return c*t/d + b // linear ease
 })
-```
-
-## Sequences
-
-Sequences can be used to execute tweens in sequence easily.
-
-```go
-var numberSequence := gween.NewSequence(
-  gween.New(0, 4, 10, ease.Linear),
-  gween.New(4, 0, 10, ease.Linear),
-)
-current, tweenFinished, sequenceFinished := numberSequence.Update(dt) 
-
-// current will rise from 0 to 4, and then back to 0 over a period of 
-// 20 seconds
-
-// tweenFinished will be true when any tween finishes
-
-// sequenceFinished will be true when the entire sequence of Tweens finishes
 ```
 
 # Credits
