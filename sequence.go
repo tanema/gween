@@ -42,7 +42,9 @@ func (seq *Sequence) Remove(index int) {
 // Update() returns the current Tween's output, whether that Tween is complete, and whether the entire Sequence was completed
 // during this Update.
 func (seq *Sequence) Update(dt float32) (float32, bool, bool) {
-
+	if !seq.HasTweens() {
+		return 0, false, false
+	}
 	var completed []int
 	remaining := dt
 	expendedLoop := false

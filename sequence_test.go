@@ -197,6 +197,10 @@ func TestSequence_Has(t *testing.T) {
 	assert.True(t, seq.HasTweens())
 	seq.Remove(0)
 	assert.False(t, seq.HasTweens())
+	current, finishedTween, seqFinished := seq.Update(1)
+	assert.Equal(t, float32(0), current)
+	assert.False(t, finishedTween)
+	assert.False(t, seqFinished)
 }
 
 func TestSequence_SetIndex(t *testing.T) {
