@@ -86,6 +86,81 @@ func TestSequence_OverflowAndComplete(t *testing.T) {
 	assert.Equal(t, 3, seq.index)
 }
 
+func TestSequence_Loops(t *testing.T) {
+	seq := NewSequence(
+		New(0, 1, 1, ease.Linear),
+		New(1, 2, 1, ease.Linear),
+		New(2, 3, 1, ease.Linear),
+	)
+	seq.SetLoop(2)
+	current, finishedTween, seqFinished := seq.Update(5.25)
+	assert.Equal(t, float32(2.25), current)
+	assert.True(t, finishedTween)
+	assert.True(t, seqFinished)
+	assert.Equal(t, 1, seq.loopRemaining)
+	assert.Equal(t, 2, seq.index)
+}
+
+func TestSequence_LoopsForever(t *testing.T) {
+	seq := NewSequence(
+		New(0, 1, 1, ease.Linear),
+		New(1, 2, 1, ease.Linear),
+		New(2, 3, 1, ease.Linear),
+	)
+	seq.SetLoop(-1)
+	current, finishedTween, seqFinished := seq.Update(3*1_000_000 + 2.25)
+	assert.Equal(t, float32(2.25), current)
+	assert.True(t, finishedTween)
+	assert.True(t, seqFinished)
+	assert.Equal(t, -1, seq.loopRemaining)
+	assert.Equal(t, 2, seq.index)
+}
+
+func TestSequence_Bounces(t *testing.T) {
+	seq := NewSequence(
+		New(0, 1, 1, ease.Linear),
+		New(1, 2, 1, ease.Linear),
+		New(2, 3, 1, ease.Linear),
+	)
+	seq.SetBounce(true)
+	current, finishedTween, seqFinished := seq.Update(5.75)
+	assert.Equal(t, float32(0.25), current)
+	assert.True(t, finishedTween)
+	assert.False(t, seqFinished)
+	assert.Equal(t, 1, seq.loopRemaining)
+	assert.Equal(t, 0, seq.index)
+
+	current, finishedTween, seqFinished = seq.Update(0.25)
+	assert.Equal(t, float32(0), current)
+	assert.True(t, finishedTween)
+	assert.True(t, seqFinished)
+	assert.Equal(t, 0, seq.loopRemaining)
+	assert.Equal(t, 0, seq.index)
+}
+
+func TestSequence_BouncesAndLoops(t *testing.T) {
+	seq := NewSequence(
+		New(0, 1, 1, ease.Linear),
+		New(1, 2, 1, ease.Linear),
+		New(2, 3, 1, ease.Linear),
+	)
+	seq.SetBounce(true)
+	seq.SetLoop(2)
+	current, finishedTween, seqFinished := seq.Update(7.25)
+	assert.Equal(t, float32(1.25), current)
+	assert.True(t, finishedTween)
+	assert.True(t, seqFinished)
+	assert.Equal(t, 1, seq.loopRemaining)
+	assert.Equal(t, 1, seq.index)
+
+	current, finishedTween, seqFinished = seq.Update(4.75)
+	assert.Equal(t, float32(0), current)
+	assert.True(t, finishedTween)
+	assert.True(t, seqFinished)
+	assert.Equal(t, 0, seq.loopRemaining)
+	assert.Equal(t, 0, seq.index)
+}
+
 func TestSequence_Remove(t *testing.T) {
 	seq := NewSequence(
 		New(0, 1, 1, ease.Linear),
