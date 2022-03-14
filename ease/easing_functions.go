@@ -300,14 +300,7 @@ func OutInBounce(t, b, c, d float32) float32 {
 
 func calculatePAS(c, d float32) (p, a, s float32) {
 	p = d * 0.3
-	if a < abs(c) {
-		return p, c, p / 4
-	}
-	return p, a, p / (2 * pi) * asin(c/a)
-}
-
-func abs(x float32) float32 {
-	return float32(math.Abs(float64(x)))
+	return p, c, p / 4
 }
 
 func pow(x, y float32) float32 {
@@ -320,10 +313,6 @@ func cos(x float32) float32 {
 
 func sin(x float32) float32 {
 	return float32(math.Sin(float64(x)))
-}
-
-func asin(x float32) float32 {
-	return float32(math.Asin(float64(x)))
 }
 
 func sqrt(x float32) float32 {
