@@ -47,10 +47,11 @@ func (seq *Sequence) Update(dt float32) (float32, bool, bool) {
 	}
 	var completed []int
 	remaining := dt
-	expendedLoop := false
+	looped := false
 	bounced := false
 
 	for {
+		// Bouncing never gets out of bounds
 		if (bounced && seq.index == 0) || seq.index >= len(seq.Tweens) || seq.index <= -1 {
 			if seq.loopRemaining >= 1 {
 				seq.loopRemaining -= 1
@@ -64,14 +65,13 @@ func (seq *Sequence) Update(dt float32) (float32, bool, bool) {
 					return seq.Tweens[index].begin, len(completed) > 0, true
 				}
 				return seq.Tweens[index].end, len(completed) > 0, true
-			} else {
-				expendedLoop = true
-				seq.index = 0
 			}
+			looped = true
+			seq.index = 0
 		}
 		v, tc := seq.Tweens[seq.index].Update(remaining)
 		if !tc {
-			return v, len(completed) > 0, expendedLoop
+			return v, len(completed) > 0, looped
 		}
 		remaining = seq.Tweens[seq.index].Overflow
 		completed = append(completed, seq.index)
@@ -87,6 +87,7 @@ func (seq *Sequence) Update(dt float32) (float32, bool, bool) {
 			} else {
 				seq.index++
 			}
+			// On the way back, tweens need to be configured to not go forward
 			if seq.index < len(seq.Tweens) && seq.index >= 0 {
 				seq.Tweens[seq.index].reverse = seq.Reverse()
 				seq.Tweens[seq.index].Reset()
