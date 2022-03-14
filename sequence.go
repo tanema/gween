@@ -70,28 +70,27 @@ func (seq *Sequence) Update(dt float32) (float32, bool, bool) {
 			}
 		}
 		v, tc := seq.Tweens[seq.index].Update(remaining)
-		if tc {
-			remaining = seq.Tweens[seq.index].Overflow
-			completed = append(completed, seq.index)
-			bounced = seq.bounced()
-			seq.Tweens[seq.index].reverse = seq.Reverse()
-			seq.Tweens[seq.index].Reset()
-			if remaining < 0 {
-				remaining *= -1
-			}
-			if !bounced {
-				if seq.reverse {
-					seq.index--
-				} else {
-					seq.index++
-				}
-				if seq.index < len(seq.Tweens) && seq.index >= 0 {
-					seq.Tweens[seq.index].reverse = seq.Reverse()
-					seq.Tweens[seq.index].Reset()
-				}
-			}
-		} else {
+		if !tc {
 			return v, len(completed) > 0, expendedLoop
+		}
+		remaining = seq.Tweens[seq.index].Overflow
+		completed = append(completed, seq.index)
+		bounced = seq.bounced()
+		seq.Tweens[seq.index].reverse = seq.Reverse()
+		seq.Tweens[seq.index].Reset()
+		if remaining < 0 {
+			remaining *= -1
+		}
+		if !bounced {
+			if seq.reverse {
+				seq.index--
+			} else {
+				seq.index++
+			}
+			if seq.index < len(seq.Tweens) && seq.index >= 0 {
+				seq.Tweens[seq.index].reverse = seq.Reverse()
+				seq.Tweens[seq.index].Reset()
+			}
 		}
 	}
 }
