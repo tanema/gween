@@ -123,13 +123,13 @@ func TestSequence_LoopsForever(t *testing.T) {
 	assert.Equal(t, 2, seq.index)
 }
 
-func TestSequence_Bounces(t *testing.T) {
+func TestSequence_Yoyos(t *testing.T) {
 	seq := NewSequence(
 		New(0, 1, 1, ease.Linear),
 		New(1, 2, 1, ease.Linear),
 		New(2, 3, 1, ease.Linear),
 	)
-	seq.SetBounce(true)
+	seq.SetYoyo(true)
 	current, finishedTween, seqFinished := seq.Update(5.75)
 	assert.Equal(t, float32(0.25), current)
 	assert.True(t, finishedTween)
@@ -145,13 +145,13 @@ func TestSequence_Bounces(t *testing.T) {
 	assert.Equal(t, 0, seq.index)
 }
 
-func TestSequence_BouncesAndLoops(t *testing.T) {
+func TestSequence_YoyosAndLoops(t *testing.T) {
 	seq := NewSequence(
 		New(0, 1, 1, ease.Linear),
 		New(1, 2, 1, ease.Linear),
 		New(2, 3, 1, ease.Linear),
 	)
-	seq.SetBounce(true)
+	seq.SetYoyo(true)
 	seq.SetLoop(2)
 	current, finishedTween, seqFinished := seq.Update(7.25)
 	assert.Equal(t, float32(1.25), current)

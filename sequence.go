@@ -4,8 +4,8 @@ package gween
 type Sequence struct {
 	Tweens []*Tween
 	index  int
-	// bounce makes the sequence "bounce" off of the end and run in reverse
-	bounce bool
+	// yoyo makes the sequence "yoyo" back to the beginning after it reaches the end
+	yoyo bool
 	// reverse runs the sequence backwards when true
 	reverse bool
 	// loop is the initial number of loops for this sequence to make
@@ -18,7 +18,7 @@ type Sequence struct {
 func NewSequence(tweens ...*Tween) *Sequence {
 	seq := &Sequence{
 		Tweens:        tweens,
-		bounce:        false,
+		yoyo:          false,
 		reverse:       false,
 		loopRemaining: 1,
 		loop:          1,
@@ -47,11 +47,11 @@ func (seq *Sequence) Update(dt float32) (float32, bool, bool) {
 	}
 	var completed []int
 	remaining := dt
-	bounced := false
+	yoyoed := false
 
 	for {
-		// Bouncing never gets out of bounds
-		if (bounced && seq.index == 0) || seq.index >= len(seq.Tweens) || seq.index <= -1 {
+		// Yoyoing never gets out of bounds
+		if (yoyoed && seq.index == 0) || seq.index >= len(seq.Tweens) || seq.index <= -1 {
 			if seq.loopRemaining >= 1 {
 				seq.loopRemaining -= 1
 			}
@@ -60,7 +60,7 @@ func (seq *Sequence) Update(dt float32) (float32, bool, bool) {
 				if index >= len(seq.Tweens) {
 					index = len(seq.Tweens) - 1
 				}
-				if bounced && seq.index == 0 {
+				if yoyoed && seq.index == 0 {
 					return seq.Tweens[index].begin, len(completed) > 0, true
 				}
 				return seq.Tweens[index].end, len(completed) > 0, true
@@ -73,13 +73,13 @@ func (seq *Sequence) Update(dt float32) (float32, bool, bool) {
 		}
 		remaining = seq.Tweens[seq.index].Overflow
 		completed = append(completed, seq.index)
-		bounced = seq.bounced()
+		yoyoed = seq.yoyoed()
 		seq.Tweens[seq.index].reverse = seq.Reverse()
 		seq.Tweens[seq.index].Reset()
 		if remaining < 0 {
 			remaining *= -1
 		}
-		if !bounced {
+		if !yoyoed {
 			if seq.reverse {
 				seq.index--
 			} else {
@@ -94,8 +94,8 @@ func (seq *Sequence) Update(dt float32) (float32, bool, bool) {
 	}
 }
 
-func (seq *Sequence) bounced() bool {
-	if seq.bounce {
+func (seq *Sequence) yoyoed() bool {
+	if seq.yoyo {
 		if seq.index == len(seq.Tweens)-1 && seq.Tweens[seq.index].reverse == false {
 			seq.reverse = true
 			return true
@@ -126,9 +126,9 @@ func (seq *Sequence) SetLoop(amount int) {
 	seq.loopRemaining = seq.loop
 }
 
-// SetBounce sets whether the Sequence should bounce off of the end and complete at the beginning
-func (seq *Sequence) SetBounce(willBounce bool) {
-	seq.bounce = willBounce
+// SetYoyo sets whether the Sequence should yoyo off of the end of the last Tween and complete at the beginning of the first Tween
+func (seq *Sequence) SetYoyo(willYoyo bool) {
+	seq.yoyo = willYoyo
 }
 
 // Reset resets the Sequence, resetting all Tweens and setting the Sequence's index back to 0.

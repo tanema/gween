@@ -106,7 +106,7 @@ s := gween.NewSeqence(tweens ...*Tween)
 ```
 
 Sequences can be used to execute tweens in sequence. They also provide looping
-and "bounce" functionality.
+and "yoyo" functionality.
 
 * `tweens` the tweens to be executed in sequential order
 
@@ -140,23 +140,23 @@ Defaults to `1`
 Configures the sequence to "loop" `l` times. When `l` is `-1`, sequence will
 loop infinitely.
 
-When used with `s.SetBounce(true)`, a single "loop" starts and ends at the
+When used with `s.SetYoyo(true)`, a single "loop" starts and ends at the
 `begin`ning of the first tween; making its way out to the `end` of the final
 tween and back again.
 
 ```golang
-s.SetBounce(bool)
+s.SetYoyo(bool)
 ```
 Defaults to `false`
 
-Configures the sequence on whether to "bounce" between the `begin`ning of the 
+Configures the sequence on whether to "yoyo" between the `begin`ning of the 
 first tween and the `end` of the last tween.
 
-* When `bounce` is `false`:
+* When `yoyo` is `false`:
   * A single loop of the sequence is when all tweens are completed in forward order.
   * When the final loop of the sequence is complete, the `currentValue` will be 
   equal to the `end` value of the final tween.
-* When `bounce` is `true`:
+* When `yoyo` is `true`:
   * A single loop is when all tweens have completed in forward order, and then completed again in reverse order.
   * When the final loop of the sequence is complete, the `currentValue` will be 
   equal to the `begin` value of the first tween.
