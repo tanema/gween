@@ -41,7 +41,7 @@ func (seq *Sequence) Remove(index int) {
 // Update updates the currently active Tween in the Sequence; once that Tween is done, the Sequence moves onto the next one.
 // Update() returns the current Tween's output, whether that Tween is complete, and whether the entire Sequence was completed
 // during this Update.
-func (seq *Sequence) Update(dt float32) (float32, bool, bool) {
+func (seq *Sequence) Update(dt float32) (value float32, tweenComplete, sequenceComplete bool) {
 	if !seq.HasTweens() {
 		return 0, false, true
 	}
@@ -55,7 +55,7 @@ func (seq *Sequence) Update(dt float32) (float32, bool, bool) {
 				seq.reverse = false
 				seq.index = seq.clampIndex(seq.index)
 				if seq.loopRemaining >= 1 {
-					seq.loopRemaining -= 1
+					seq.loopRemaining--
 				}
 				if seq.loopRemaining == 0 || remaining == 0 {
 					return seq.Tweens[seq.index].begin, len(completed) > 0, true
@@ -74,14 +74,13 @@ func (seq *Sequence) Update(dt float32) (float32, bool, bool) {
 		} else if seq.index >= len(seq.Tweens) || seq.index <= -1 {
 			// out of bounds at either end, loop
 			if seq.loopRemaining >= 1 {
-				seq.loopRemaining -= 1
+				seq.loopRemaining--
 			}
 			if seq.loopRemaining == 0 || remaining == 0 {
 				if seq.reverse {
 					return seq.Tweens[seq.clampIndex(seq.index)].begin, len(completed) > 0, true
-				} else {
-					return seq.Tweens[seq.clampIndex(seq.index)].end, len(completed) > 0, true
 				}
+				return seq.Tweens[seq.clampIndex(seq.index)].end, len(completed) > 0, true
 			}
 			seq.index = seq.wrapIndex(seq.index)
 			seq.Tweens[seq.index].reverse = seq.Reverse()

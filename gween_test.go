@@ -140,10 +140,10 @@ func TestTween_CanReverse(t *testing.T) {
 
 func TestTween_CanReverseFromFinished(t *testing.T) {
 	tween := New(0, 10, 10, ease.Linear)
-	current, isFinished := tween.Update(10)
+	_, isFinished := tween.Update(10)
 	assert.True(t, isFinished)
 	tween.reverse = true
-	current, isFinished = tween.Update(2)
+	current, isFinished := tween.Update(2)
 	assert.Equal(t, float32(8), current)
 	assert.False(t, isFinished)
 }

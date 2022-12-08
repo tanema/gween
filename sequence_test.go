@@ -129,6 +129,7 @@ func TestSequence_Yoyos(t *testing.T) {
 		New(1, 2, 1, ease.Linear),
 		New(2, 3, 1, ease.Linear),
 	)
+
 	seq.SetYoyo(true)
 	current, finishedTween, seqFinished := seq.Update(5.75)
 	assert.Equal(t, float32(0.25), current)
@@ -360,13 +361,13 @@ func TestSequence_RealWorld(t *testing.T) {
 	assert.True(t, finishedTween)
 	assert.False(t, sequenceFinished)
 
-	current, finishedTween, sequenceFinished = seq.Update(2)
+	_, _, sequenceFinished = seq.Update(2)
 	// Now at the start of the third Tween
 	assert.Equal(t, seq.Index(), 2)
 	assert.False(t, sequenceFinished)
 
 	seq.Remove(2)
-	current, finishedTween, sequenceFinished = seq.Update(1)
+	_, finishedTween, sequenceFinished = seq.Update(1)
 	// Now finished because we removed the third tween and then called Sequence.Update()
 	assert.False(t, finishedTween)
 	assert.True(t, sequenceFinished)
