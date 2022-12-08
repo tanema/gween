@@ -47,25 +47,45 @@ func (seq *Sequence) Update(dt float32) (float32, bool, bool) {
 	}
 	var completed []int
 	remaining := dt
-	yoyoed := false
 
 	for {
-		// Yoyoing never gets out of bounds
-		if (yoyoed && seq.index == 0) || seq.index >= len(seq.Tweens) || seq.index <= -1 {
+		if seq.yoyo {
+			if seq.index < 0 {
+				// Out of bounds at beginnning, loop
+				seq.reverse = false
+				seq.index = seq.clampIndex(seq.index)
+				if seq.loopRemaining >= 1 {
+					seq.loopRemaining -= 1
+				}
+				if seq.loopRemaining == 0 || remaining == 0 {
+					return seq.Tweens[seq.index].begin, len(completed) > 0, true
+				}
+				seq.Tweens[seq.index].reverse = seq.Reverse()
+				seq.Tweens[seq.index].Reset()
+			}
+			if seq.index >= len(seq.Tweens) {
+				// Out of bounds at end, yoyo
+				seq.reverse = true
+				seq.index = seq.clampIndex(seq.index)
+
+				seq.Tweens[seq.index].reverse = seq.Reverse()
+				seq.Tweens[seq.index].Reset()
+			}
+		} else if seq.index >= len(seq.Tweens) || seq.index <= -1 {
+			// out of bounds at either end, loop
 			if seq.loopRemaining >= 1 {
 				seq.loopRemaining -= 1
 			}
 			if seq.loopRemaining == 0 || remaining == 0 {
-				index := seq.index
-				if index >= len(seq.Tweens) {
-					index = len(seq.Tweens) - 1
+				if seq.reverse {
+					return seq.Tweens[seq.clampIndex(seq.index)].begin, len(completed) > 0, true
+				} else {
+					return seq.Tweens[seq.clampIndex(seq.index)].end, len(completed) > 0, true
 				}
-				if yoyoed && seq.index == 0 {
-					return seq.Tweens[index].begin, len(completed) > 0, true
-				}
-				return seq.Tweens[index].end, len(completed) > 0, true
 			}
-			seq.index = 0
+			seq.index = seq.wrapIndex(seq.index)
+			seq.Tweens[seq.index].reverse = seq.Reverse()
+			seq.Tweens[seq.index].Reset()
 		}
 		v, tc := seq.Tweens[seq.index].Update(remaining)
 		if !tc {
@@ -73,39 +93,20 @@ func (seq *Sequence) Update(dt float32) (float32, bool, bool) {
 		}
 		remaining = seq.Tweens[seq.index].Overflow
 		completed = append(completed, seq.index)
-		yoyoed = seq.yoyoed()
-		seq.Tweens[seq.index].reverse = seq.Reverse()
-		seq.Tweens[seq.index].Reset()
 		if remaining < 0 {
 			remaining *= -1
 		}
-		if !yoyoed {
-			if seq.reverse {
-				seq.index--
-			} else {
-				seq.index++
-			}
-			// On the way back, tweens need to be configured to not go forward
-			if seq.index < len(seq.Tweens) && seq.index >= 0 {
-				seq.Tweens[seq.index].reverse = seq.Reverse()
-				seq.Tweens[seq.index].Reset()
-			}
+		if seq.reverse {
+			seq.index--
+		} else {
+			seq.index++
+		}
+		// On the way back, tweens need to be configured to not go forward
+		if seq.index < len(seq.Tweens) && seq.index >= 0 {
+			seq.Tweens[seq.index].reverse = seq.Reverse()
+			seq.Tweens[seq.index].Reset()
 		}
 	}
-}
-
-func (seq *Sequence) yoyoed() bool {
-	if seq.yoyo {
-		if seq.index == len(seq.Tweens)-1 && seq.Tweens[seq.index].reverse == false {
-			seq.reverse = true
-			return true
-		}
-		if seq.index == 0 && seq.Tweens[seq.index].reverse == true {
-			seq.reverse = false
-			return true
-		}
-	}
-	return false
 }
 
 // Index returns the current index of the Sequence. Note that this can exceed the number of Tweens in the Sequence.
@@ -148,4 +149,34 @@ func (seq *Sequence) HasTweens() bool {
 // Reverse returns whether the Sequence currently running in reverse.
 func (seq *Sequence) Reverse() bool {
 	return seq.reverse
+}
+
+// SetReverse sets whether the Sequence will start running in reverse.
+func (seq *Sequence) SetReverse(r bool) {
+	if seq.index < len(seq.Tweens) && seq.index >= 0 {
+		seq.Tweens[seq.index].reverse = r
+	}
+	seq.reverse = r
+}
+
+// clampIndex clamps the provided index to the bounds of the Tweens slice
+func (seq *Sequence) clampIndex(index int) int {
+	if index >= len(seq.Tweens) {
+		index = len(seq.Tweens) - 1
+	}
+	if index < 0 {
+		index = 0
+	}
+	return index
+}
+
+// wrapIndex wraps the provided index when it is out of bounds, otherwise returns index
+func (seq *Sequence) wrapIndex(index int) int {
+	if index >= len(seq.Tweens) {
+		index = 0
+	}
+	if index < 0 {
+		index = len(seq.Tweens) - 1
+	}
+	return index
 }
