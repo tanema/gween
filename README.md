@@ -169,6 +169,27 @@ Resets all tweens in the sequence and sets the "current" tween back to the first
 sets the remaining loop count back to the initial value last set using the 
 `.SetLoop()` function (or `1` if using the default).
 
+```golang
+s.SetReverse(bool)
+```
+Defaults to `false`
+
+Configures the sequence to run in "reverse" or not.
+
+* When `yoyo` is `false`:
+  * If `reverse` is `false`, the sequence will run forward and will loop back to
+  the beginning if available
+  * If `reverse` is `true`, the sequence will run backward and will loop back to
+  the end if available
+* When `yoyo` is `true`:
+  * The sequence will run according to normal yoyo logic. If a sequence has gone
+  from the start to the end, and is coming back to the start (reverse is true) 
+  and you set reverse to false, then the sequence will start heading towards the
+  end again. When it reaches the end it will simply yoyo as expected. The inverse
+  is also true, if the sequence is heading to the end and you reverse it before
+  the end, it'll simply head toward the start and if it reaches the start it will
+  consume a loop and, if possible, start again.
+
 
 ```golang
 s.Add(tweens ...*Tween)
