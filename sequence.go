@@ -152,9 +152,10 @@ func (seq *Sequence) Reverse() bool {
 
 // SetReverse sets whether the Sequence will start running in reverse.
 func (seq *Sequence) SetReverse(r bool) {
-	if seq.index < len(seq.Tweens) && seq.index >= 0 {
-		seq.Tweens[seq.index].reverse = r
+	if seq.index >= len(seq.Tweens) || seq.index < 0 {
+		seq.index = seq.clampIndex(seq.index)
 	}
+	seq.Tweens[seq.index].reverse = r
 	seq.reverse = r
 }
 

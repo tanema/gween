@@ -278,6 +278,35 @@ func TestSequence_SetReverseWithYoyo(t *testing.T) {
 	assert.Equal(t, 0, seq.index)
 }
 
+func TestSequence_SetReverseAfterComplete(t *testing.T) {
+	seq := NewSequence(
+		New(0, 1, 1, ease.Linear),
+		New(1, 2, 1, ease.Linear),
+		New(2, 3, 1, ease.Linear),
+	)
+	seq.SetLoop(1)
+
+	// Normal operation
+	current, finishedTween, seqFinished := seq.Update(3.0)
+	assert.Equal(t, float32(3.0), current)
+	assert.True(t, finishedTween)
+	assert.True(t, seqFinished)
+	assert.Equal(t, 0, seq.loopRemaining)
+	assert.Equal(t, 3, seq.index)
+
+	seq.SetReverse(true)
+	seq.SetLoop(1)
+
+	// Goes in reverse
+	current, finishedTween, seqFinished = seq.Update(2.0)
+	assert.Equal(t, float32(1.0), current)
+	assert.True(t, finishedTween)
+	assert.False(t, seqFinished)
+	assert.Equal(t, 1, seq.loopRemaining)
+	assert.Equal(t, 0, seq.index)
+	assert.True(t, seq.Reverse())
+}
+
 func TestSequence_Remove(t *testing.T) {
 	seq := NewSequence(
 		New(0, 1, 1, ease.Linear),
