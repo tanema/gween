@@ -129,6 +129,7 @@ func TestSequence_Yoyos(t *testing.T) {
 		New(1, 2, 1, ease.Linear),
 		New(2, 3, 1, ease.Linear),
 	)
+
 	seq.SetYoyo(true)
 	current, finishedTween, seqFinished := seq.Update(5.75)
 	assert.Equal(t, float32(0.25), current)
@@ -166,6 +167,144 @@ func TestSequence_YoyosAndLoops(t *testing.T) {
 	assert.True(t, seqFinished)
 	assert.Equal(t, 0, seq.loopRemaining)
 	assert.Equal(t, 0, seq.index)
+}
+
+func TestSequence_SetReverse(t *testing.T) {
+	seq := NewSequence(
+		New(0, 1, 1, ease.Linear),
+		New(1, 2, 1, ease.Linear),
+		New(2, 3, 1, ease.Linear),
+	)
+	seq.SetLoop(2)
+
+	// Normal operation
+	current, finishedTween, seqFinished := seq.Update(2.25)
+	assert.Equal(t, float32(2.25), current)
+	assert.True(t, finishedTween)
+	assert.False(t, seqFinished)
+	assert.Equal(t, 2, seq.loopRemaining)
+	assert.Equal(t, 2, seq.index)
+
+	seq.SetReverse(true)
+
+	// Goes in reverse
+	current, finishedTween, seqFinished = seq.Update(2.0)
+	assert.Equal(t, float32(0.25), current)
+	assert.True(t, finishedTween)
+	assert.False(t, seqFinished)
+	assert.Equal(t, 2, seq.loopRemaining)
+	assert.Equal(t, 0, seq.index)
+	assert.True(t, seq.Reverse())
+
+	// Consumes a loop at the start!, resets to the end, continues in reverse
+	current, finishedTween, seqFinished = seq.Update(2.0)
+	assert.Equal(t, float32(1.25), current)
+	assert.True(t, finishedTween)
+	assert.False(t, seqFinished)
+	assert.Equal(t, 1, seq.loopRemaining)
+	assert.Equal(t, 1, seq.index)
+	assert.True(t, seq.Reverse())
+
+	// Hits the beginning, no more loops, ends
+	current, finishedTween, seqFinished = seq.Update(2.0)
+	assert.Equal(t, float32(0.0), current)
+	assert.True(t, finishedTween)
+	assert.True(t, seqFinished)
+	assert.Equal(t, 0, seq.loopRemaining)
+	assert.Equal(t, -1, seq.index)
+	assert.True(t, seq.Reverse())
+}
+
+func TestSequence_SetReverseWithYoyo(t *testing.T) {
+	seq := NewSequence(
+		New(0, 1, 1, ease.Linear),
+		New(1, 2, 1, ease.Linear),
+		New(2, 3, 1, ease.Linear),
+	)
+	seq.SetYoyo(true)
+	seq.SetLoop(2)
+
+	// Standard operation
+	current, finishedTween, seqFinished := seq.Update(2.25)
+	assert.Equal(t, float32(2.25), current)
+	assert.True(t, finishedTween)
+	assert.False(t, seqFinished)
+	assert.Equal(t, 2, seq.loopRemaining)
+	assert.Equal(t, 2, seq.index)
+
+	seq.SetReverse(true)
+
+	// Goes in reverse
+	current, finishedTween, seqFinished = seq.Update(2.0)
+	assert.Equal(t, float32(0.25), current)
+	assert.True(t, finishedTween)
+	assert.False(t, seqFinished)
+	assert.Equal(t, 2, seq.loopRemaining)
+	assert.Equal(t, 0, seq.index)
+
+	// Consumes a loop at the start, despite not reaching the end yet, and continues
+	current, finishedTween, seqFinished = seq.Update(2.0)
+	assert.Equal(t, float32(1.75), current)
+	assert.True(t, finishedTween)
+	assert.False(t, seqFinished)
+	assert.Equal(t, 1, seq.loopRemaining)
+	assert.Equal(t, 1, seq.index)
+
+	// Hits the end, yoyos
+	current, finishedTween, seqFinished = seq.Update(2.0)
+	assert.Equal(t, float32(2.25), current)
+	assert.True(t, finishedTween)
+	assert.False(t, seqFinished)
+	assert.Equal(t, 1, seq.loopRemaining)
+	assert.Equal(t, 2, seq.index)
+	assert.True(t, seq.Reverse()) // Is in reverse
+
+	seq.SetReverse(false) // Go forward instead
+
+	// Hits the end again, yoyos the same
+	current, finishedTween, seqFinished = seq.Update(1.5)
+	assert.Equal(t, float32(2.25), current)
+	assert.True(t, finishedTween)
+	assert.False(t, seqFinished)
+	assert.Equal(t, 1, seq.loopRemaining)
+	assert.Equal(t, 2, seq.index)
+
+	// Consumes a loop at the start like normal, no more loops, end
+	current, finishedTween, seqFinished = seq.Update(2.5)
+	assert.Equal(t, float32(0.0), current)
+	assert.True(t, finishedTween)
+	assert.True(t, seqFinished)
+	assert.Equal(t, 0, seq.loopRemaining)
+	assert.Equal(t, 0, seq.index)
+}
+
+func TestSequence_SetReverseAfterComplete(t *testing.T) {
+	seq := NewSequence(
+		New(0, 1, 1, ease.Linear),
+		New(1, 2, 1, ease.Linear),
+		New(2, 3, 1, ease.Linear),
+	)
+	seq.SetLoop(1)
+
+	// Normal operation
+	current, finishedTween, seqFinished := seq.Update(3.0)
+	assert.Equal(t, float32(3.0), current)
+	assert.True(t, finishedTween)
+	assert.True(t, seqFinished)
+	assert.Equal(t, 0, seq.loopRemaining)
+	assert.Equal(t, 3, seq.index)
+
+	seq.SetReverse(true)
+	seq.SetLoop(1)
+
+	// Goes in reverse
+	current, finishedTween, seqFinished = seq.Update(2.0)
+	assert.Equal(t, float32(1.0), current)
+	assert.True(t, finishedTween)
+	assert.False(t, seqFinished)
+	assert.Equal(t, 1, seq.loopRemaining)
+	assert.Equal(t, 0, seq.index)
+	assert.True(t, seq.Reverse())
 }
 
 func TestSequence_Remove(t *testing.T) {
@@ -251,13 +390,13 @@ func TestSequence_RealWorld(t *testing.T) {
 	assert.True(t, finishedTween)
 	assert.False(t, sequenceFinished)
 
-	current, finishedTween, sequenceFinished = seq.Update(2)
+	_, _, sequenceFinished = seq.Update(2)
 	// Now at the start of the third Tween
 	assert.Equal(t, seq.Index(), 2)
 	assert.False(t, sequenceFinished)
 
 	seq.Remove(2)
-	current, finishedTween, sequenceFinished = seq.Update(1)
+	_, finishedTween, sequenceFinished = seq.Update(1)
 	// Now finished because we removed the third tween and then called Sequence.Update()
 	assert.False(t, finishedTween)
 	assert.True(t, sequenceFinished)

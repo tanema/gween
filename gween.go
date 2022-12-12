@@ -39,15 +39,16 @@ func New(begin, end, duration float32, easing ease.TweenFunc) *Tween {
 // Set will set the current time along the duration of the tween. It will then return
 // the current value as well as a boolean to determine if the tween is finished.
 func (tween *Tween) Set(time float32) (current float32, isFinished bool) {
-	if time <= 0 {
+	switch {
+	case time <= 0:
 		tween.Overflow = time
 		tween.time = 0
 		current = tween.begin
-	} else if time >= tween.duration {
+	case time >= tween.duration:
 		tween.Overflow = time - tween.duration
 		tween.time = tween.duration
 		current = tween.end
-	} else {
+	default:
 		tween.Overflow = 0
 		tween.time = time
 		current = tween.easing(tween.time, tween.begin, tween.change, tween.duration)
