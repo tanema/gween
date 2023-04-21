@@ -3,20 +3,33 @@
 // the easing functions.
 package gween
 
-import "github.com/tanema/gween/ease"
+import (
+	"encoding/json"
+	"reflect"
+	"runtime"
+	"strings"
+
+	"github.com/tanema/gween/ease"
+)
 
 type (
+	// tweenData holds and hides the core information for tween, while still
+	// allowing it to be serialized
+	tweenData struct {
+		Duration   float32
+		Time       float32
+		Begin      float32
+		End        float32
+		Change     float32
+		Overflow   float32
+		easing     ease.TweenFunc
+		EasingName string
+		Reverse    bool
+	}
 	// Tween encapsulates the easing function along with timing data. This allows
 	// a ease.TweenFunc to be used to be easily animated.
 	Tween struct {
-		duration float32
-		time     float32
-		begin    float32
-		end      float32
-		change   float32
-		Overflow float32
-		easing   ease.TweenFunc
-		reverse  bool
+		d tweenData
 	}
 )
 
@@ -25,14 +38,19 @@ type (
 // easing function can be one of the provided easing functions from the ease package
 // or you can provide one of your own.
 func New(begin, end, duration float32, easing ease.TweenFunc) *Tween {
+	// TODO: This doesn't allow for anonymous / curried easing funcs
+	f := strings.Split(runtime.FuncForPC(reflect.ValueOf(easing).Pointer()).Name(), ".")
 	return &Tween{
-		begin:    begin,
-		end:      end,
-		change:   end - begin,
-		duration: duration,
-		easing:   easing,
-		Overflow: 0,
-		reverse:  false,
+		d: tweenData{
+			Begin:      begin,
+			End:        end,
+			Change:     end - begin,
+			Duration:   duration,
+			easing:     easing,
+			EasingName: f[len(f)-1],
+			Overflow:   0,
+			Reverse:    false,
+		},
 	}
 }
 
@@ -41,39 +59,86 @@ func New(begin, end, duration float32, easing ease.TweenFunc) *Tween {
 func (tween *Tween) Set(time float32) (current float32, isFinished bool) {
 	switch {
 	case time <= 0:
-		tween.Overflow = time
-		tween.time = 0
-		current = tween.begin
-	case time >= tween.duration:
-		tween.Overflow = time - tween.duration
-		tween.time = tween.duration
-		current = tween.end
+		tween.d.Overflow = time
+		tween.d.Time = 0
+		current = tween.d.Begin
+	case time >= tween.d.Duration:
+		tween.d.Overflow = time - tween.d.Duration
+		tween.d.Time = tween.d.Duration
+		current = tween.d.End
 	default:
-		tween.Overflow = 0
-		tween.time = time
-		current = tween.easing(tween.time, tween.begin, tween.change, tween.duration)
+		tween.d.Overflow = 0
+		tween.d.Time = time
+		current = tween.d.easing(tween.d.Time, tween.d.Begin, tween.d.Change, tween.d.Duration)
 	}
 
-	if tween.reverse {
-		return current, tween.time <= 0
+	if tween.d.Reverse {
+		return current, tween.d.Time <= 0
 	}
-	return current, tween.time >= tween.duration
+	return current, tween.d.Time >= tween.d.Duration
 }
 
 // Reset will set the Tween to the beginning of the two values.
 func (tween *Tween) Reset() {
-	if tween.reverse {
-		tween.Set(tween.duration)
+	if tween.d.Reverse {
+		tween.Set(tween.d.Duration)
 	} else {
 		tween.Set(0)
 	}
 }
 
+// Overflow return the current overflow value of the tween
+func (tween *Tween) Overflow() float32 {
+	return tween.d.Overflow
+}
+
 // Update will increment the timer of the Tween and ease the value. It will then
 // return the current value as well as a bool to mark if the tween is finished or not.
 func (tween *Tween) Update(dt float32) (current float32, isFinished bool) {
-	if tween.reverse {
-		return tween.Set(tween.time - dt)
+	if tween.d.Reverse {
+		return tween.Set(tween.d.Time - dt)
 	}
-	return tween.Set(tween.time + dt)
+	return tween.Set(tween.d.Time + dt)
+}
+
+func (tween *Tween) MarshalJSON() ([]byte, error) {
+	return json.Marshal(tween.d)
+}
+
+func (tween *Tween) UnmarshalJSON(data []byte) error {
+	if err := json.Unmarshal(data, &tween.d); err != nil {
+		return err
+	}
+	tween.d.easing = ease.EasingFunctions[tween.d.EasingName]
+	return nil
+}
+
+func (tween *Tween) Equal(other *Tween) bool {
+	fp1 := reflect.ValueOf(tween.d.easing).Pointer()
+	fp2 := reflect.ValueOf(other.d.easing).Pointer()
+	if fp1 != fp2 {
+		return false
+	}
+	if tween.d.Duration != other.d.Duration {
+		return false
+	}
+	if tween.d.Time != other.d.Time {
+		return false
+	}
+	if tween.d.Begin != other.d.Begin {
+		return false
+	}
+	if tween.d.End != other.d.End {
+		return false
+	}
+	if tween.d.Change != other.d.Change {
+		return false
+	}
+	if tween.d.Overflow != other.d.Overflow {
+		return false
+	}
+	if tween.d.Reverse != other.d.Reverse {
+		return false
+	}
+	return true
 }

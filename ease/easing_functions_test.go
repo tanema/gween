@@ -50,52 +50,8 @@ func TestEasingFunctions(t *testing.T) {
 		"OutSine":      {0, 1.5691819145569, 3.1286893008046, 4.6689072771181, 6.1803398874989, 7.6536686473018, 9.0798099947909, 10.449971294319, 11.755705045849, 12.988960966604, 14.142135623731, 15.208119312001, 16.180339887499, 17.052803287082, 17.820130483767, 18.477590650226, 19.021130325903, 19.447398407954, 19.753766811903, 19.938346674663, 20},
 	}
 
-	easingFunctions := map[string]TweenFunc{
-		"InBack":       InBack,
-		"InBounce":     InBounce,
-		"InCirc":       InCirc,
-		"InCubic":      InCubic,
-		"InElastic":    InElastic,
-		"InExpo":       InExpo,
-		"InOutBack":    InOutBack,
-		"InOutBounce":  InOutBounce,
-		"InOutCirc":    InOutCirc,
-		"InOutCubic":   InOutCubic,
-		"InOutElastic": InOutElastic,
-		"InOutExpo":    InOutExpo,
-		"InOutQuad":    InOutQuad,
-		"InOutQuart":   InOutQuart,
-		"InOutQuint":   InOutQuint,
-		"InOutSine":    InOutSine,
-		"InQuad":       InQuad,
-		"InQuart":      InQuart,
-		"InQuint":      InQuint,
-		"InSine":       InSine,
-		"Linear":       Linear,
-		"OutBack":      OutBack,
-		"OutBounce":    OutBounce,
-		"OutCirc":      OutCirc,
-		"OutCubic":     OutCubic,
-		"OutElastic":   OutElastic,
-		"OutExpo":      OutExpo,
-		"OutInBack":    OutInBack,
-		"OutInBounce":  OutInBounce,
-		"OutInCirc":    OutInCirc,
-		"OutInCubic":   OutInCubic,
-		"OutInElastic": OutInElastic,
-		"OutInExpo":    OutInExpo,
-		"OutInQuad":    OutInQuad,
-		"OutInQuart":   OutInQuart,
-		"OutInQuint":   OutInQuint,
-		"OutInSine":    OutInSine,
-		"OutQuad":      OutQuad,
-		"OutQuart":     OutQuart,
-		"OutQuint":     OutQuint,
-		"OutSine":      OutSine,
-	}
-
 	for easingName, values := range testValues {
-		easing := easingFunctions[easingName]
+		easing := EasingFunctions[easingName]
 		begin := float32(0)
 		end := values[len(values)-1]
 		change := end - begin
