@@ -38,7 +38,7 @@ var sequence = gween.NewSequence(
 )
 // set to infinitely loop
 sequence.SetLoop(-1)
-val, tweenCompleted, seqenceCompleted = sequence.Update(dt)
+val, tweenCompleted, sequenceCompleted = sequence.Update(dt)
 ```
 
 # Interface
@@ -102,7 +102,7 @@ Moves a tween's internal clock to a particular moment.
 ### Creation
 
 ```golang
-s := gween.NewSeqence(tweens ...*Tween)
+s := gween.NewSequence(tweens ...*Tween)
 ```
 
 Sequences can be used to execute tweens in sequence. They also provide looping
