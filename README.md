@@ -9,8 +9,8 @@ interface, and it comes with several easing functions.
 package gween
 
 import (
+  "github.com/tanema/gween"
   "github.com/tanema/gween/ease"
-  "github.com/tanema/gween/gween"
 )
 
 // increase the value from 0 to 5 in 10 seconds
